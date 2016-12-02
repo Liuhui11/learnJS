@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>触发器触发播放</title>
+    <style type="text/css">
+        *{ margin: 0; padding: 0; text-decoration: none;}
+        body{padding: 20px}
+        #container{width: 600px;height: 400px;overflow: hidden;position: relative}
+        #list{float: left;width: 10000px;position: absolute;z-index:1;}
+        #list img{float: left;}
+        #buttons{position: absolute;height: 10px;width: 100px;z-index:2;bottom: 20px;left:250px;}
+        #buttons span{cursor: pointer;float: left;border:1px solid #fff;width: 10px;
+            height: 10px;border-radius:50%;background-color: #333;margin-right: 5px;}
+        #buttons .on{background: orangered;}
+    </style>
+
+    <script>
+        window.onload = function(){
+            var container = document.getElementById("container");
+            var list = document.getElementById("list");
+            var first = list.getElementsByTagName("img")[0];
+            var num = list.getElementsByTagName("img").length-1;
+//            alert(typeof num);
+            var last = list.getElementsByTagName("img")[num];
+
+            var buttons = document.getElementById("buttons").getElementsByTagName("span");
+            var prev = document.getElementById("prev");
+
+            var len = 5;
+            var index = 1;
+            var interval = 3000;
+            var timer;
+            var animated = false;
+
+            function animate (offset){
+                if(offset == 0){
+                    return;
+                }
+
+                animated = true;    //防止其他点击触发的时候的animate冲突
+
+                var time = 300; //位移总时间
+                var inteval = 10; //位移间隔时间
+                var speed = offset/(time/inteval); //每次位移值
+                var left = parseInt(list.style.left) + offset;
+
+                var go =function(){
+                    //没有达到目标值
+                    if((speed < 0 && parseInt(list.style.left) > left) || (speed > 0 && parseInt(list.style.left) < left)){ //前面是往右的情况,后面是往左的情况
+                        list.style.left = parseInt(list.style.left) + speed + 'px';
+                        setTimeout(go, inteval);
+                    }
+                    //达到目标值,切换完了才点有效(不需要再执行动画了)
+                    else{ //跳转的临界点
+                        animated = false; //为什么要在这里加上false??? 实现是否正在动画的存放
+                        list.style.left = left + 'px'; //显示末尾添加的那张图片
+
+                        if(left >= 0){ //第-1张的时候,终于搞明白了
+                            list.style.left = -600 * len + 'px';
+                        }
+                        if(left<(-600 * len)){ //第六张的时候
+//                            alert();
+                            list.style.left = '-600px';
+                        }
+
+                    }
+
+
+
+                    console.log( list.style.left);
+                    console.log( left);
+                    console.log( speed + '----------');
+                }
+                go();
+
+            }
+
+            function addSide () {
+                var cloneFirst = last.cloneNode(true);
+                var cloneLast = first.cloneNode(true);
+                console.log(first.cloneNode(true));
+                console.log(list.insertBefore(cloneFirst, list.firstChild));
+                console.log(list.appendChild(cloneLast));
+            }
+
+            function play(){
+                timer = setInterval(function(){
+                    if(animated){
+                        return;
+                    }
+                    if(index >= 5){ //加这句是为了
+                        index = 1;
+                    }else{
+                        index += 1;
+                    }
+                    animate(-600);
+                    showButton();
+                },interval);
+            }
+            function stop(){
+                clearInterval(timer);
+            }
+
+            function showButton(){
+//                alert();
+                for(var i = 0; i < buttons.length; i++){
+                    if(buttons[i].className == 'on'){
+                        buttons[i].className = '';
+                        break;
+                    }
+                }
+                buttons[index - 1].className = 'on';
+            }
+
+            function prevImg(){
+                if(animated){ //正在切换点击无效
+                    return;
+                }
+                if(index <= 1){
+                    index = 5;
+                }else{
+                    index -= 1;
+                }
+                console.log("prevImg:" + index);
+                animate(600);
+                showButton();
+            }
+
+            prev.onclick = prevImg;
+
+            for(var i = 0; i < buttons.length; i++){
+                buttons[i].onclick = function(){
+                    if(this.className == 'on'){ //说明点击的是当前激活的那个
+                        return;
+                    }
+
+                    var myIndex = parseInt(this.getAttribute("index"));
+                    var offset = -600 * (myIndex - index);
+
+                    console.log(myIndex);
+                    console.log(offset);
+
+                    animate(offset);
+                    index = myIndex;
+                    showButton();
+                }
+            }
+            addSide();
+            play();
+
+//
+//
+            container.onmouseover = stop;
+            container.onmouseout = play;
+        }
+    </script>
+</head>
+<body>
+
+<div id="container">
+    <div id="list" style="left:-600px;">
+        <!--<img src="img/5.jpg" alt="5"/>-->
+        <img src="img/1.jpg" alt="1"/>
+        <img src="img/2.jpg" alt="2"/>
+        <img src="img/3.jpg" alt="3"/>
+        <img src="img/4.jpg" alt="4"/>
+        <img src="img/5.jpg" alt="5"/>
+        <!--<img src="img/1.jpg" alt="1"/>-->
+    </div>
+    <div id="buttons">
+        <span index="1" class="on"></span>
+        <span index="2"></span>
+        <span index="3"></span>
+        <span index="4"></span>
+        <span index="5"></span>
+    </div>
+</div>
+<button id="prev">上一个</button>
+
+</body>
+</html>

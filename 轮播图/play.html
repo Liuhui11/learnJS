@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>自动播放</title>
+    <style type="text/css">
+        *{ margin: 0; padding: 0; text-decoration: none;}
+        body{padding: 20px}
+        #container{width: 600px;height: 400px;overflow: hidden;position: relative}
+        #list{float: left;width: 10000px;position: absolute;z-index:1;}
+        #list img{float: left;}
+        #buttons{position: absolute;height: 10px;width: 100px;z-index:2;bottom: 20px;left:250px;}
+        #buttons span{cursor: pointer;float: left;border:1px solid #fff;width: 10px;
+            height: 10px;border-radius:50%;background-color: #333;margin-right: 5px;}
+        #buttons .on{background: orangered;}
+    </style>
+
+    <script>
+        window.onload = function(){
+            var container = document.getElementById("container");
+            var list = document.getElementById("list");
+            var first = list.getElementsByTagName("img")[0];
+            var num = list.getElementsByTagName("img").length-1;
+//            alert(typeof num);
+            var last = list.getElementsByTagName("img")[num];
+
+
+            var len = 5;
+            var animated = false;
+            var interval = 3000;
+            var timer;
+
+            function animate (offset){
+                if(offset == 0){
+                    return;
+                }
+
+                animated = true;
+                var time = 300;
+                var inteval = 10;
+                var speed = offset/(time/inteval);
+                var left = parseInt(list.style.left) + offset;
+
+                var go =function(){
+                    if(speed < 0 && parseInt(list.style.left) > left){
+                        list.style.left = parseInt(list.style.left) + speed + 'px';
+                        setTimeout(go, inteval);
+                    }else{
+                        list.style.left = left + 'px'; //显示末尾添加的那张图片
+                        if(left<(-600 * len)){ //第六张的时候
+                            alert();
+                            list.style.left = '-600px';
+                        }
+                        animated = false;
+                    }
+                    console.log( list.style.left);
+                    console.log( left);
+                    console.log( speed + '----------');
+                }
+                go();
+            }
+
+            function addSide () {
+                var cloneFirst = last.cloneNode(true);
+                var cloneLast = first.cloneNode(true);
+                console.log(first.cloneNode(true));
+                console.log(list.insertBefore(cloneFirst, list.firstChild));
+                console.log(list.appendChild(cloneLast));
+            }
+
+            function play(){
+                addSide();
+                timer = setInterval(function(){
+                    if(animated){
+                        return;
+                    }
+                    animate(-600);
+                },interval);
+            }
+            function stop(){
+                clearInterval(timer);
+            }
+            play();
+//
+//
+            container.onmouseover = stop;
+            container.onmouseout = play;
+        }
+    </script>
+</head>
+<body>
+
+<div id="container">
+    <div id="list" style="left:-600px;">
+        <!--<img src="img/5.jpg" alt="5"/>-->
+        <img src="img/1.jpg" alt="1"/>
+        <img src="img/2.jpg" alt="2"/>
+        <img src="img/3.jpg" alt="3"/>
+        <img src="img/4.jpg" alt="4"/>
+        <img src="img/5.jpg" alt="5"/>
+        <!--<img src="img/1.jpg" alt="1"/>-->
+    </div>
+</div>
+
+
+</body>
+</html>
